@@ -1,10 +1,10 @@
 {
-  "name": "zoom-cli",
+  "name": "zoom-agent-cli",
   "version": "0.1.0",
-  "description": "CLI and MCP server for the Zoom video communications platform",
+  "description": "CLI and MCP server for the Zoom API — built for humans and AI agents",
   "type": "module",
   "bin": {
-    "zoom": "./dist/index.js"
+    "zoom": "dist/index.js"
   },
   "files": [
     "dist",
@@ -30,8 +30,13 @@
     "ai-agent",
     "openclaw"
   ],
-  "author": "Top of Funnel",
+  "author": "bcharleson",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bcharleson/zoom-agent-cli.git"
+  },
+  "homepage": "https://github.com/bcharleson/zoom-agent-cli#readme",
   "engines": {
     "node": ">=18.0.0"
   },
