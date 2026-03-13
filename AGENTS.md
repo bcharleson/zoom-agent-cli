@@ -1,4 +1,4 @@
-# zoom-cli — AI Agent Guide
+# zoom-agent-cli — AI Agent Guide
 
 ## Quick Start (No Browser Needed)
 
@@ -23,8 +23,26 @@ Add to your MCP config (e.g., `~/.claude.json`):
 {
   "mcpServers": {
     "zoom": {
-      "command": "node",
-      "args": ["/path/to/zoom-cli/dist/mcp.js"],
+      "command": "npx",
+      "args": ["-y", "zoom-agent-cli", "mcp"],
+      "env": {
+        "ZOOM_ACCOUNT_ID": "your-account-id",
+        "ZOOM_CLIENT_ID": "your-client-id",
+        "ZOOM_CLIENT_SECRET": "your-client-secret"
+      }
+    }
+  }
+}
+```
+
+Or if installed globally (`npm install -g zoom-agent-cli`):
+
+```json
+{
+  "mcpServers": {
+    "zoom": {
+      "command": "zoom",
+      "args": ["mcp"],
       "env": {
         "ZOOM_ACCOUNT_ID": "your-account-id",
         "ZOOM_CLIENT_ID": "your-client-id",
