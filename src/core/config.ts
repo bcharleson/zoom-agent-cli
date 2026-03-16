@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { ZoomConfig } from './types.js';
 
-const CONFIG_DIR = join(homedir(), '.zoom-cli');
+const CONFIG_DIR = join(homedir(), '.zoom-agent-cli');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 export function getConfigDir(): string {

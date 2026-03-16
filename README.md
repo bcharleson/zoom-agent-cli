@@ -73,7 +73,7 @@ export ZOOM_CLIENT_SECRET="your-client-secret"
 zoom login
 ```
 
-Stores credentials in `~/.zoom-cli/config.json` (mode `0600`).
+Stores credentials in `~/.zoom-agent-cli/config.json` (mode `0600`).
 
 ### Option C — Per-command flags
 

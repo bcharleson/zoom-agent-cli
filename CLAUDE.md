@@ -1,4 +1,4 @@
-# zoom-cli — Developer Guide
+# zoom-agent-cli — Developer Guide
 
 ## Architecture
 
@@ -17,7 +17,7 @@ src/
 │   ├── client.ts              # HTTP client (S2S OAuth, auto token refresh, retry)
 │   ├── handler.ts             # executeCommand() — builds HTTP requests from definitions
 │   ├── auth.ts                # Credential resolution (flag > env > config)
-│   ├── config.ts              # ~/.zoom-cli/config.json manager
+│   ├── config.ts              # ~/.zoom-agent-cli/config.json manager
 │   ├── output.ts              # JSON formatting, --fields, --quiet
 │   └── errors.ts              # Typed error classes
 ├── commands/

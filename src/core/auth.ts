@@ -34,7 +34,7 @@ export async function resolveCredentials(flags?: {
     };
   }
 
-  // 3. Stored config from ~/.zoom-cli/config.json
+  // 3. Stored config from ~/.zoom-agent-cli/config.json
   const config = await loadConfig();
   if (config?.account_id && config?.client_id && config?.client_secret) {
     return {

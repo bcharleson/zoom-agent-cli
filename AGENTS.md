@@ -58,7 +58,7 @@ Or if installed globally (`npm install -g zoom-agent-cli`):
 Three-tier credential resolution (checked in order):
 1. **CLI flags:** `--account-id`, `--client-id`, `--client-secret`
 2. **Environment variables:** `ZOOM_ACCOUNT_ID`, `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`
-3. **Stored config:** `~/.zoom-cli/config.json` (created via `zoom login`)
+3. **Stored config:** `~/.zoom-agent-cli/config.json` (created via `zoom login`)
 
 For agents, use environment variables (option 2).
 

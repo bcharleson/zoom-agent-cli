@@ -143,7 +143,7 @@ export class ZoomClient implements IZoomClient {
 
         const headers: Record<string, string> = {
           Authorization: `Bearer ${token}`,
-          'User-Agent': `zoom-cli/${VERSION}`,
+          'User-Agent': `zoom-agent-cli/${VERSION}`,
         };
 
         if (options.body !== undefined) {
