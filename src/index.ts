@@ -6,7 +6,7 @@ const program = new Command();
 program
   .name('zoom')
   .description('CLI and MCP server for the Zoom video communications platform')
-  .version('0.1.0')
+  .version('0.1.3')
   .option('--account-id <id>', 'Zoom Account ID (overrides ZOOM_ACCOUNT_ID env var)')
   .option('--client-id <id>', 'Zoom Client ID (overrides ZOOM_CLIENT_ID env var)')
   .option('--client-secret <secret>', 'Zoom Client Secret (overrides ZOOM_CLIENT_SECRET env var)')
