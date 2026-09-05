@@ -235,7 +235,7 @@ All 59 tools follow the naming convention `{group}_{subcommand}`:
 | `meetings_summary` | Get AI Companion meeting summary |
 | `recordings_list` | List cloud recordings |
 | `recordings_get` | Get recording files and download URLs |
-| `recordings_transcript` | Get meeting transcript |
+| `recordings_transcript` | Get meeting transcript (VTT from recording files) |
 | `recordings_settings` | Get recording sharing settings |
 | `users_list` | List all account users |
 | `users_get` | Get user details |
@@ -278,11 +278,13 @@ All 59 tools follow the naming convention `{group}_{subcommand}`:
 |---------|-------------|
 | `zoom recordings list [options]` | List cloud recordings (`--from`, `--to`) |
 | `zoom recordings get <meetingId>` | Get recording files and download URLs |
-| `zoom recordings transcript <meetingId>` | Get meeting transcript |
+| `zoom recordings transcript <meetingId>` | Get meeting transcript (VTT file from recording files) |
 | `zoom recordings settings <meetingId>` | Get recording settings |
 | `zoom recordings delete <meetingId>` | Move recordings to trash |
 | `zoom recordings delete-file <meetingId> <recordingId>` | Delete a specific file |
 | `zoom recordings recover <meetingId>` | Recover from trash |
+
+Zoom has no standalone transcript API. `recordings transcript` calls `GET /meetings/{meetingId}/recordings?include_fields=download_access_token`, finds the `TRANSCRIPT` / `audio_transcript` file, and downloads that VTT via `download_url`.
 
 ### users
 
