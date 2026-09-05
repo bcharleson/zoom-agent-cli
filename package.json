@@ -17,6 +17,7 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e:smoke": "tsx scripts/e2e-smoke.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },

@@ -33,10 +33,42 @@ This tool uses **Server-to-Server OAuth** — no browser login, no user interact
 
 ### Add required scopes
 
-In your app's **Scopes** tab, add these scopes based on which command groups you need:
+New Marketplace **Server-to-Server OAuth** apps use **granular** scopes (for example `meeting:read:list_meetings:admin`). Older apps may still show classic umbrellas such as `meeting:read:admin` and `recording:read:admin`.
 
-| Group | Required Scopes |
-|-------|----------------|
+If an API error says `does not contain scopes:[…]`, add the **exact slug** from that message, then **re-activate** the app. A missing scope is an app-config problem, not a CLI bug.
+
+#### Transcript-only (status + recordings list + VTT)
+
+Minimum to run `zoom status`, `zoom recordings list`, and `zoom recordings transcript`:
+
+| Command | Granular S2S scope | Classic (legacy apps) |
+|---------|--------------------|------------------------|
+| `zoom status` (`GET /users/me`) | `user:read:user:admin` | `user:read:admin` |
+| `zoom recordings list` | `cloud_recording:read:list_user_recordings:admin` | `recording:read:admin` |
+| `zoom recordings get` / `transcript` (VTT download) | `cloud_recording:read:list_recording_files:admin` | `recording:read:admin` |
+
+`recordings transcript` is not a standalone Zoom API. It lists recording files and downloads the `TRANSCRIPT` / `audio_transcript` VTT.
+
+#### Full CLI surface (granular `:admin` slugs)
+
+Add these on a new S2S app for the whole command set. Search the Scopes tab by the human-readable label if a slug is hidden.
+
+| Group | Granular scopes |
+|-------|-----------------|
+| **meetings** | `meeting:read:list_meetings:admin` `meeting:read:meeting:admin` `meeting:write:meeting:admin` `meeting:update:meeting:admin` `meeting:delete:meeting:admin` `meeting:update:status:admin` `meeting:read:list_registrants:admin` `meeting:write:registrant:admin` `meeting:read:summary:admin` |
+| **past-meetings** | `meeting:read:past_meeting:admin` `meeting:read:list_past_participants:admin` |
+| **recordings** | `cloud_recording:read:list_user_recordings:admin` `cloud_recording:read:list_recording_files:admin` `cloud_recording:read:recording_settings:admin` `cloud_recording:delete:meeting_recording:admin` `cloud_recording:delete:recording_file:admin` `cloud_recording:update:recover_meeting_recordings:admin` |
+| **users** | `user:read:user:admin` `user:read:list_users:admin` `user:write:user:admin` `user:update:user:admin` `user:delete:user:admin` `user:read:settings:admin` |
+| **webinars** | `webinar:read:list_webinars:admin` `webinar:read:webinar:admin` `webinar:write:webinar:admin` `webinar:update:webinar:admin` `webinar:delete:webinar:admin` `webinar:read:list_registrants:admin` `webinar:write:registrant:admin` `webinar:read:list_panelists:admin` `webinar:write:panelist:admin` `webinar:read:list_polls:admin` |
+| **reports** | `report:read:meeting:admin` `report:read:list_meeting_participants:admin` `report:read:list_users:admin` `report:read:operation_logs:admin` (daily / cloud-recording usage: search Marketplace for those labels, or use classic `report:read:admin`) |
+| **dashboard** | `dashboard:read:list_meetings:admin` `dashboard:read:meeting:admin` `dashboard:read:list_meeting_participants:admin` `dashboard:read:meeting_quality_score:admin` |
+| **chat** | `team_chat:read:list_user_channels:admin` `team_chat:read:user_channel:admin` `team_chat:write:user_channel:admin` `team_chat:read:list_user_messages:admin` `team_chat:write:user_message:admin` `team_chat:update:user_message:admin` `team_chat:delete:user_message:admin` `team_chat:read:list_members:admin` |
+| **groups** | `group:read:list_groups:admin` `group:read:group:admin` `group:write:group:admin` `group:update:group:admin` `group:delete:group:admin` `group:read:list_members:admin` `group:write:member:admin` |
+
+#### Classic scopes (legacy apps)
+
+| Group | Required scopes |
+|-------|-----------------|
 | **meetings** | `meeting:read:admin` `meeting:write:admin` |
 | **recordings** | `recording:read:admin` `recording:write:admin` |
 | **users** | `user:read:admin` `user:write:admin` |
@@ -47,7 +79,7 @@ In your app's **Scopes** tab, add these scopes based on which command groups you
 | **groups** | `group:read:admin` `group:write:admin` |
 | **AI summary** | `meeting_summary:read:admin` |
 
-> **Tip:** For full access add all scopes. For a read-only agent, add only the `:read:admin` variants.
+> **Tip:** For a read-only agent, add only the `:read:` / `:read:admin` variants. Live smoke (`npm run test:e2e:smoke`) treats missing-scope errors on `meetings list` and `past-meetings *` as **SKIP** (app config), not **FAIL**.
 
 ### Activate the app
 
@@ -101,6 +133,32 @@ Credentials found:
 Testing API connection...
 Connected as: Jane Doe (jane@example.com)
 ```
+
+### Live E2E smoke
+
+From a clone (not required for everyday CLI use):
+
+```bash
+export ZOOM_ACCOUNT_ID="your-account-id"
+export ZOOM_CLIENT_ID="your-client-id"
+export ZOOM_CLIENT_SECRET="your-client-secret"
+
+npm install
+npm test                 # unit tests (vitest) — no Zoom account needed
+npm run test:e2e:smoke   # live S2S checks
+```
+
+`test:e2e:smoke` (also `scripts/e2e-smoke`) hits the live Zoom API when all three env vars are set and **exits 0 without calling Zoom** when they are unset. It covers:
+
+| Check | Missing-scope / empty data | Real CLI or API bug |
+|-------|----------------------------|---------------------|
+| `status` | — | **FAIL** |
+| `recordings list` | **SKIP** if the token lacks recording scopes | **FAIL** |
+| `recordings transcript` | **SKIP** if no `TRANSCRIPT` file in the last 30 days | **FAIL** if a transcript file exists but download/parse breaks |
+| `meetings list` | **SKIP** (needs `meeting:read:list_meetings` / `:admin`) | **FAIL** |
+| `past-meetings get` / `participants` | **SKIP** (needs `meeting:read:past_meeting` / `list_past_participants`) | **FAIL** |
+
+The runner never prints credentials, download tokens, or full VTT bodies — only the first WEBVTT line and character length. Optional overrides: `ZOOM_E2E_USER_ID` (default `me`), `ZOOM_E2E_FROM` / `ZOOM_E2E_TO` (`YYYY-MM-DD`), `ZOOM_E2E_MEETING_ID`.
 
 ---
 
