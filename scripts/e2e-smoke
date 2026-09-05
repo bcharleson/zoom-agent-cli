@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Live Zoom E2E smoke. Skips (exit 0) when S2S env vars are unset.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+if [[ -x "$ROOT/node_modules/.bin/tsx" ]]; then
+  exec "$ROOT/node_modules/.bin/tsx" "$ROOT/scripts/e2e-smoke.ts" "$@"
+fi
+exec npx --no-install tsx "$ROOT/scripts/e2e-smoke.ts" "$@"
