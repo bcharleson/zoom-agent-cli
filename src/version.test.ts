@@ -27,4 +27,13 @@ describe('VERSION', () => {
     expect(pkg.bin.zoom).toBe('dist/index.js');
     expect(pkg.bin['zoom-agent-cli']).toBe('dist/index.js');
   });
+
+  it('ships a root LICENSE GitHub licensee can detect as MIT', () => {
+    const license = readFileSync(join(root, 'LICENSE'), 'utf8');
+    expect(license.startsWith('MIT License\n')).toBe(true);
+    expect(license).toContain('Copyright (c)');
+    expect(license).toContain('Permission is hereby granted, free of charge, to any person obtaining a copy');
+    expect(license).toContain('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND');
+    expect(pkg.license).toBe('MIT');
+  });
 });

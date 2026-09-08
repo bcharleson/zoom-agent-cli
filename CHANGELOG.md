@@ -17,7 +17,7 @@ Production-ready open-source release. **Upgrade from 0.1.x** with `npm install -
 ### Added
 
 - `zoom-agent-cli` binary alias (in addition to `zoom`) so `npx zoom-agent-cli` works.
-- MIT `LICENSE`, this changelog, and GitHub Actions CI (install, typecheck, test, build, CLI smoke).
+- Canonical MIT `LICENSE` at the repo root (GitHub licensee / SPDX MIT) plus this changelog and GitHub Actions CI.
 - Documented npm / npx / GitHub install, clone-and-build, and a live transcript verification path.
 
 ### Changed
