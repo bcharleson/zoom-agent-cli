@@ -15,7 +15,8 @@ src/
 ├── core/
 │   ├── types.ts               # CommandDefinition, ZoomClient interfaces
 │   ├── client.ts              # HTTP client (S2S OAuth, auto token refresh, retry)
-│   ├── handler.ts             # executeCommand() — builds HTTP requests from definitions
+│   ├── handler.ts             # executeCommand() — path/query/body + UUID encoding
+│   ├── path.ts                # encodeMeetingPathId (double-encode / and //)
 │   ├── auth.ts                # Credential resolution (flag > env > config)
 │   ├── config.ts              # ~/.zoom-agent-cli/config.json manager
 │   ├── output.ts              # JSON formatting, --fields, --quiet
@@ -25,7 +26,7 @@ src/
 │   ├── auth/                  # login, logout, status (special)
 │   ├── mcp/                   # MCP server command
 │   ├── meetings/              # 9 commands
-│   ├── recordings/            # 7 commands
+│   ├── recordings/            # 9 commands
 │   ├── users/                 # 6 commands
 │   ├── past-meetings/         # 2 commands
 │   ├── webinars/              # 10 commands
@@ -39,8 +40,8 @@ src/
 
 ### Key Patterns
 
-- **executeCommand():** Standard REST endpoints use `executeCommand(cmdDef, input, client)` which routes fields to path/query/body based on `fieldMappings`.
-- **Custom handlers:** Non-standard endpoints (e.g., user creation wraps body in `{action, user_info}`) use custom handler functions.
+- **executeCommand():** Standard REST endpoints use `executeCommand(cmdDef, input, client)` which routes fields to path/query/body based on `fieldMappings`. Path IDs that start with `/` or contain `//` are double-encoded.
+- **Custom handlers:** Non-standard endpoints (e.g., user creation wraps body in `{action, user_info}`) use custom handler functions. `recordings transcript` lists recording files and downloads the VTT — Zoom has no standalone transcript endpoint.
 - **Auth:** Zoom Server-to-Server OAuth with automatic token refresh. Client caches tokens and auto-refreshes on expiry or 401.
 
 ### Adding a New Command
@@ -53,9 +54,10 @@ src/
 ### Build
 
 ```bash
-bun install
-npx tsup           # builds dist/index.js (CLI) + dist/mcp.js (MCP)
-npx tsc --noEmit   # typecheck
+npm install
+npm test
+npm run typecheck
+npm run build      # dist/index.js (CLI) + dist/mcp.js (MCP)
 ```
 
 ### Auth (S2S OAuth)

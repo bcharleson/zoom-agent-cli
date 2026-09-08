@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install
+        run: npm install
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: CLI smoke
+        run: |
+          node dist/index.js --version
+          node dist/index.js --help
+          node dist/index.js recordings --help
+          node dist/index.js recordings transcript --help
+
+      - name: Pack whitelist
+        run: |
+          npm pack --dry-run | tee /tmp/pack.txt
+          grep -q 'LICENSE' /tmp/pack.txt
+          grep -q 'dist/index.js' /tmp/pack.txt
+          if grep -E '(^|[[:space:]])(\.env|config\.json)$|node_modules/' /tmp/pack.txt; then
+            echo "Refusing to publish secrets or node_modules" >&2
+            exit 1
+          fi

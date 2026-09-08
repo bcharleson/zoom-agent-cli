@@ -8,13 +8,13 @@ import {
   ServerError,
   ZoomError,
 } from './errors.js';
+import { VERSION } from '../version.js';
 
 const BASE_URL = 'https://api.zoom.us/v2';
 const TOKEN_URL = 'https://zoom.us/oauth/token';
 const MAX_RETRIES = 3;
 const REQUEST_TIMEOUT = 30_000;
 const WRITE_TIMEOUT = 15_000;
-const VERSION = '0.1.0';
 
 // Buffer before expiry to avoid race conditions (5 minutes)
 const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000;

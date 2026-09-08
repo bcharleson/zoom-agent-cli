@@ -1,5 +1,7 @@
 # zoom-agent-cli — AI Agent Guide
 
+Requires Node 18+. Install with `npm install -g zoom-agent-cli` or run `npx zoom-agent-cli`. From a clone: `npm install && npm run build`. Upgrade from 0.1.x with `npm install -g zoom-agent-cli@latest` — older npm builds 404 on transcripts.
+
 ## Quick Start (No Browser Needed)
 
 ```bash
@@ -13,6 +15,10 @@ zoom status
 
 # List upcoming meetings
 zoom meetings list --user-id me --type upcoming --pretty
+
+# Pull a cloud recording VTT (Zoom has no standalone transcript endpoint)
+zoom recordings recent --days 14 --pretty
+zoom recordings transcript <meetingId>
 ```
 
 ## MCP Server Setup
@@ -108,6 +114,8 @@ For agents, use environment variables (option 2).
 | `zoom recordings transcript <meetingId>` | `recordings_transcript` | Get meeting VTT + plain text |
 | `zoom recordings recent` | `recordings_recent` | List last N days of recordings with has_transcript |
 | `zoom recordings search <keyword>` | `recordings_search` | Search recording topics (default 90 days) |
+
+`recordings transcript` calls `GET /meetings/{meetingId}/recordings?include_fields=download_access_token`, finds `TRANSCRIPT` / `audio_transcript`, and downloads that VTT. UUIDs that start with `/` or contain `//` are double-encoded.
 
 ### users (6 commands)
 | Command | MCP Tool | Description |

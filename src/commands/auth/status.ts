@@ -20,6 +20,9 @@ export function registerStatusCommand(program: Command): void {
         console.log(`Connected as: ${user.first_name} ${user.last_name} (${user.email})`);
       } catch (error: any) {
         console.error('Auth check failed:', error.message ?? error);
+        if (error?.code === 'AUTH_ERROR' || /credential/i.test(String(error?.message ?? ''))) {
+          console.error('Set ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET or run: zoom login');
+        }
         process.exitCode = 1;
       }
     });
