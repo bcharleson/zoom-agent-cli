@@ -24,6 +24,7 @@ Production-ready open-source release. **Upgrade from 0.1.x** with `npm install -
 
 - Missing-auth errors list env vars, `zoom login`, and CLI flags.
 - README, MCP tool list, and recordings command table include `recent` / `search`.
+- README documents granular vs classic Marketplace scopes for transcript-only vs full CLI.
 
 ## [0.1.4] - unpublished
 

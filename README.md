@@ -61,7 +61,17 @@ This tool uses **Server-to-Server OAuth** — no browser login. You exchange acc
 
 ### Add scopes
 
-In the app **Scopes** tab, add what you need. Transcripts require `recording:read:admin`.
+New Marketplace Server-to-Server apps use **granular** slugs (for example `cloud_recording:read:list_recording_files:admin`). Older apps may still show classic umbrellas such as `recording:read:admin`. If Zoom returns `does not contain scopes:[…]`, add the exact slug from that message and **re-activate** the app.
+
+**Transcript-only** (`zoom status`, `recordings list`, `recordings get` / `transcript`):
+
+| Command | Granular S2S scope | Classic (legacy apps) |
+|---------|--------------------|------------------------|
+| `zoom status` (`GET /users/me`) | `user:read:user:admin` | `user:read:admin` |
+| `zoom recordings list` / `recent` / `search` | `cloud_recording:read:list_user_recordings:admin` | `recording:read:admin` |
+| `zoom recordings get` / `transcript` | `cloud_recording:read:list_recording_files:admin` | `recording:read:admin` |
+
+**Full CLI** (classic umbrellas — search the Scopes tab by label if you are on a granular-only app):
 
 | Group | Required scopes |
 |-------|-----------------|
@@ -75,7 +85,7 @@ In the app **Scopes** tab, add what you need. Transcripts require `recording:rea
 | **groups** | `group:read:admin` `group:write:admin` |
 | **AI summary** | `meeting_summary:read:admin` |
 
-For a read-only agent, add only the `:read:admin` variants. Click **Activate your app** — tokens are not issued until the app is active.
+For a read-only agent, add only the `:read:` / `:read:admin` variants. Click **Activate your app** — tokens are not issued until the app is active.
 
 ---
 

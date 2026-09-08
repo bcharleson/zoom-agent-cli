@@ -40,10 +40,24 @@ jobs:
 
       - name: Pack whitelist
         run: |
-          npm pack --dry-run | tee /tmp/pack.txt
-          grep -q 'LICENSE' /tmp/pack.txt
-          grep -q 'dist/index.js' /tmp/pack.txt
-          if grep -E '(^|[[:space:]])(\.env|config\.json)$|node_modules/' /tmp/pack.txt; then
-            echo "Refusing to publish secrets or node_modules" >&2
-            exit 1
-          fi
+          npm pack --dry-run --json --loglevel=error > /tmp/pack.json
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const raw = JSON.parse(readFileSync("/tmp/pack.json", "utf8"));
+            const info = Array.isArray(raw) ? raw[0] : raw;
+            const files = (info.files ?? []).map((f) => f.path);
+            const required = ["LICENSE", "README.md", "dist/index.js", "package.json"];
+            const missing = required.filter((f) => !files.includes(f));
+            if (missing.length) {
+              console.error("pack missing required files:", missing.join(", "));
+              process.exit(1);
+            }
+            const banned = files.filter((f) =>
+              f === ".env" || f === "config.json" || f.startsWith("node_modules/") || f.endsWith("/.env")
+            );
+            if (banned.length) {
+              console.error("pack includes banned files:", banned.join(", "));
+              process.exit(1);
+            }
+            console.log("pack ok:", files.join(", "));
+          '
