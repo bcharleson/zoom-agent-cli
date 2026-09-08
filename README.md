@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/zoom-agent-cli.svg)](https://www.npmjs.com/package/zoom-agent-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**59 commands** across meetings, recordings, users, webinars, reports, dashboard, chat, and groups. Every command is available both as a CLI subcommand and as an MCP tool — same schema, same auth, one codebase.
+**61 commands** across meetings, recordings, users, webinars, reports, dashboard, chat, and groups. Every command is available both as a CLI subcommand and as an MCP tool — same schema, same auth, one codebase.
 
 ---
 
@@ -124,7 +124,7 @@ Commands:
   status                  Test connectivity
   mcp                     Start MCP server (stdio)
   meetings                Manage meetings (9 commands)
-  recordings              Manage recordings (7 commands)
+  recordings              Manage recordings (9 commands)
   users                   Manage users (6 commands)
   past-meetings           Access past meeting data (2 commands)
   webinars                Manage webinars (10 commands)
@@ -154,7 +154,13 @@ zoom recordings get <meeting-id>
 # Get AI Companion meeting summary
 zoom meetings summary <meeting-uuid>
 
-# Get transcript for a recorded meeting
+# Find recent recorded meetings (has_transcript flag)
+zoom recordings recent --days 14 --pretty
+
+# Search recording topics
+zoom recordings search Matchr --days 90 --pretty
+
+# Get transcript for a recorded meeting (VTT + plain text)
 zoom recordings transcript <meeting-id>
 
 # Get past meeting participants with join/leave times

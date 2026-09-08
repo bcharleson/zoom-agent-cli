@@ -66,6 +66,7 @@ describe('fetchRecordingTranscript', () => {
     expect(result).toEqual({
       meetingId: '12345678901',
       transcript: 'WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.000\nHello',
+      text: 'Hello',
     });
   });
 
@@ -79,7 +80,7 @@ describe('fetchRecordingTranscript', () => {
 
     const result = await fetchRecordingTranscript('99', mockClient(get));
 
-    expect(result).toEqual({ meetingId: '99', transcript: 'WEBVTT' });
+    expect(result).toEqual({ meetingId: '99', transcript: 'WEBVTT', text: '' });
   });
 
   it('returns a null transcript when no transcript file is present', async () => {

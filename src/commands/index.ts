@@ -31,6 +31,8 @@ import { recordingsDeleteFileCommand } from './recordings/delete-file.js';
 import { recordingsRecoverCommand } from './recordings/recover.js';
 import { recordingsSettingsCommand } from './recordings/settings.js';
 import { recordingsTranscriptCommand } from './recordings/transcript.js';
+import { recordingsRecentCommand } from './recordings/recent.js';
+import { recordingsSearchCommand } from './recordings/search.js';
 
 // Users
 import { usersListCommand } from './users/list.js';
@@ -109,6 +111,8 @@ export const allCommands: CommandDefinition[] = [
   recordingsRecoverCommand,
   recordingsSettingsCommand,
   recordingsTranscriptCommand,
+  recordingsRecentCommand,
+  recordingsSearchCommand,
   // Users
   usersListCommand,
   usersGetCommand,

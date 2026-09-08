@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { CommandDefinition, ZoomClient } from '../../core/types.js';
+import { vttToText } from './shared.js';
 
 const TRANSCRIPT_DOWNLOAD_TIMEOUT_MS = 30_000;
 
@@ -15,7 +16,7 @@ interface RecordingsResponse {
 }
 
 export type TranscriptResult =
-  | { meetingId: string; transcript: string }
+  | { meetingId: string; transcript: string; text: string }
   | { transcript: null; message: string };
 
 /**
@@ -69,7 +70,8 @@ export async function fetchRecordingTranscript(
       return { transcript: null, message: `Failed to download transcript (HTTP ${response.status}).` };
     }
 
-    return { meetingId, transcript: await response.text() };
+    const transcript = await response.text();
+    return { meetingId, transcript, text: vttToText(transcript) };
   } finally {
     clearTimeout(timeoutId);
   }

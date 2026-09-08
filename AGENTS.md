@@ -17,7 +17,18 @@ zoom meetings list --user-id me --type upcoming --pretty
 
 ## MCP Server Setup
 
-Add to your MCP config (e.g., `~/.claude.json`):
+Add to Grok (`~/.grok/config.toml`):
+
+```toml
+[mcp_servers.zoom]
+command = "zoom"
+args = ["mcp"]
+enabled = true
+```
+
+Credentials come from `zoom login` (`~/.zoom-agent-cli/config.json`) or `ZOOM_ACCOUNT_ID` / `ZOOM_CLIENT_ID` / `ZOOM_CLIENT_SECRET`.
+
+Add to Claude (`~/.claude.json`):
 
 ```json
 {
@@ -70,7 +81,7 @@ For agents, use environment variables (option 2).
 - **`--fields`:** Filter output fields: `--fields id,topic,start_time`
 - **`--quiet`:** Exit code only, no output
 
-## Command Reference (59 commands across 9 groups)
+## Command Reference (61 commands across 9 groups)
 
 ### meetings (9 commands)
 | Command | MCP Tool | Description |
@@ -85,7 +96,7 @@ For agents, use environment variables (option 2).
 | `zoom meetings add-registrant <id>` | `meetings_add_registrant` | Add a registrant |
 | `zoom meetings summary <id>` | `meetings_summary` | Get AI Companion summary |
 
-### recordings (7 commands)
+### recordings (9 commands)
 | Command | MCP Tool | Description |
 |---------|----------|-------------|
 | `zoom recordings list` | `recordings_list` | List user's recordings |
@@ -94,7 +105,9 @@ For agents, use environment variables (option 2).
 | `zoom recordings delete-file <meetingId> <recordingId>` | `recordings_delete_file` | Delete specific file |
 | `zoom recordings recover <meetingId>` | `recordings_recover` | Recover from trash |
 | `zoom recordings settings <meetingId>` | `recordings_settings` | Get recording settings |
-| `zoom recordings transcript <meetingId>` | `recordings_transcript` | Get meeting transcript |
+| `zoom recordings transcript <meetingId>` | `recordings_transcript` | Get meeting VTT + plain text |
+| `zoom recordings recent` | `recordings_recent` | List last N days of recordings with has_transcript |
+| `zoom recordings search <keyword>` | `recordings_search` | Search recording topics (default 90 days) |
 
 ### users (6 commands)
 | Command | MCP Tool | Description |
