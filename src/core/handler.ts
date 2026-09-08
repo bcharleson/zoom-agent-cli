@@ -1,3 +1,4 @@
+import { encodeMeetingPathId } from './path.js';
 import type { CommandDefinition, ZoomClient } from './types.js';
 
 /**
@@ -19,7 +20,7 @@ export async function executeCommand(
 
     switch (location) {
       case 'path':
-        path = path.replace(`{${field}}`, encodeURIComponent(String(value)));
+        path = path.replace(`{${field}}`, encodeMeetingPathId(String(value)));
         break;
       case 'query':
         query[field] = value;

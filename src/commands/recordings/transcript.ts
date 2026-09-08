@@ -1,14 +1,9 @@
 import { z } from 'zod';
 import type { CommandDefinition, ZoomClient } from '../../core/types.js';
-import { vttToText } from './shared.js';
+import { encodeMeetingPathId } from '../../core/path.js';
+import { isTranscriptFile, vttToText, type RecordingFile } from './shared.js';
 
 const TRANSCRIPT_DOWNLOAD_TIMEOUT_MS = 30_000;
-
-interface RecordingFile {
-  file_type?: string;
-  recording_type?: string;
-  download_url?: string;
-}
 
 interface RecordingsResponse {
   download_access_token?: string;
@@ -19,21 +14,7 @@ export type TranscriptResult =
   | { meetingId: string; transcript: string; text: string }
   | { transcript: null; message: string };
 
-/**
- * Zoom requires double-encoding for meeting UUIDs that begin with '/' or contain '//'.
- * Numeric meeting IDs and ordinary UUIDs are encoded once.
- */
-export function encodeMeetingPathId(meetingId: string): string {
-  const encoded = encodeURIComponent(meetingId);
-  if (meetingId.startsWith('/') || meetingId.includes('//')) {
-    return encodeURIComponent(encoded);
-  }
-  return encoded;
-}
-
-function isTranscriptFile(file: RecordingFile): boolean {
-  return file.file_type === 'TRANSCRIPT' || file.recording_type === 'audio_transcript';
-}
+export { encodeMeetingPathId };
 
 function buildDownloadUrl(downloadUrl: string, accessToken?: string): string {
   if (!accessToken) return downloadUrl;
@@ -72,6 +53,11 @@ export async function fetchRecordingTranscript(
 
     const transcript = await response.text();
     return { meetingId, transcript, text: vttToText(transcript) };
+  } catch (error) {
+    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+      return { transcript: null, message: 'Transcript download timed out after 30s.' };
+    }
+    throw error;
   } finally {
     clearTimeout(timeoutId);
   }
@@ -85,6 +71,7 @@ export const recordingsTranscriptCommand: CommandDefinition = {
     'Get the VTT transcript for a meeting recording. Downloads the TRANSCRIPT file from the meeting recording files — Zoom has no standalone transcript endpoint.',
   examples: [
     'zoom recordings transcript 12345678901',
+    'zoom recordings recent --days 14 --pretty',
   ],
 
   inputSchema: z.object({

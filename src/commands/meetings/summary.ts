@@ -12,7 +12,7 @@ export const meetingsSummaryCommand: CommandDefinition = {
   ],
 
   inputSchema: z.object({
-    meetingId: z.string().describe('Meeting ID or UUID (use double-encoded UUID if it contains / or //)'),
+    meetingId: z.string().describe('Meeting ID or UUID. UUIDs that start with / or contain // are double-encoded automatically.'),
   }),
 
   cliMappings: {

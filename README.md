@@ -1,44 +1,82 @@
 # zoom-agent-cli
 
-> CLI and MCP server for the full Zoom API — built for humans and AI agents.
+CLI and MCP server for the Zoom API — built for humans and AI agents.
 
 [![npm version](https://img.shields.io/npm/v/zoom-agent-cli.svg)](https://www.npmjs.com/package/zoom-agent-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/bcharleson/zoom-agent-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/bcharleson/zoom-agent-cli/actions/workflows/ci.yml)
 
-**61 commands** across meetings, recordings, users, webinars, reports, dashboard, chat, and groups. Every command is available both as a CLI subcommand and as an MCP tool — same schema, same auth, one codebase.
+**61 commands** across meetings, recordings, users, webinars, reports, dashboard, chat, and groups. Every command is a CLI subcommand and an MCP tool — same schema, same auth, one codebase.
+
+> **Upgrading from 0.1.x?** Run `npm install -g zoom-agent-cli@latest`. npm `0.1.3` and earlier called a nonexistent Zoom transcript endpoint and 404'd even when a VTT existed. `0.2.0` downloads the `TRANSCRIPT` file from `GET /meetings/{id}/recordings`. See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
 ## Install
 
+**npm (global)** — Node 18+:
+
 ```bash
 npm install -g zoom-agent-cli
+zoom --help
+zoom --version
+```
+
+**npx** (no install):
+
+```bash
+npx zoom-agent-cli --help
+npx zoom-agent-cli status
+```
+
+**From GitHub** (latest `main`, including unreleased fixes):
+
+```bash
+npm install -g github:bcharleson/zoom-agent-cli
+```
+
+**Clone and run** (fork / local development):
+
+```bash
+git clone https://github.com/bcharleson/zoom-agent-cli.git
+cd zoom-agent-cli
+npm install
+npm run build
+node dist/index.js --help
+# optional: npm link   # puts `zoom` and `zoom-agent-cli` on PATH
 ```
 
 ---
 
-## Step 1 — Create a Zoom Server-to-Server OAuth App
+## Zoom Server-to-Server OAuth
 
-This tool uses **Server-to-Server OAuth** — no browser login, no user interaction. You exchange account credentials for a short-lived access token automatically on every request.
+This tool uses **Server-to-Server OAuth** — no browser login. You exchange account credentials for a short-lived access token on every request.
 
 ### Create the app
 
 1. Go to [marketplace.zoom.us](https://marketplace.zoom.us) → **Develop** → **Build App**
 2. Choose **Server-to-Server OAuth**
-3. Name it anything (e.g., `zoom-agent-cli`)
-4. Under **App Credentials**, copy your:
-   - **Account ID**
-   - **Client ID**
-   - **Client Secret**
+3. Name it anything (e.g. `zoom-agent-cli`)
+4. Under **App Credentials**, copy **Account ID**, **Client ID**, and **Client Secret**
 
-### Add required scopes
+### Add scopes
 
-In your app's **Scopes** tab, add these scopes based on which command groups you need:
+New Marketplace Server-to-Server apps use **granular** slugs (for example `cloud_recording:read:list_recording_files:admin`). Older apps may still show classic umbrellas such as `recording:read:admin`. If Zoom returns `does not contain scopes:[…]`, add the exact slug from that message and **re-activate** the app.
 
-| Group | Required Scopes |
-|-------|----------------|
+**Transcript-only** (`zoom status`, `recordings list`, `recordings get` / `transcript`):
+
+| Command | Granular S2S scope | Classic (legacy apps) |
+|---------|--------------------|------------------------|
+| `zoom status` (`GET /users/me`) | `user:read:user:admin` | `user:read:admin` |
+| `zoom recordings list` / `recent` / `search` | `cloud_recording:read:list_user_recordings:admin` | `recording:read:admin` |
+| `zoom recordings get` / `transcript` | `cloud_recording:read:list_recording_files:admin` | `recording:read:admin` |
+
+**Full CLI** (classic umbrellas — search the Scopes tab by label if you are on a granular-only app):
+
+| Group | Required scopes |
+|-------|-----------------|
 | **meetings** | `meeting:read:admin` `meeting:write:admin` |
-| **recordings** | `recording:read:admin` `recording:write:admin` |
+| **recordings** (list, get, **transcript**) | `recording:read:admin` `recording:write:admin` |
 | **users** | `user:read:admin` `user:write:admin` |
 | **webinars** | `webinar:read:admin` `webinar:write:admin` |
 | **reports** | `report:read:admin` |
@@ -47,19 +85,15 @@ In your app's **Scopes** tab, add these scopes based on which command groups you
 | **groups** | `group:read:admin` `group:write:admin` |
 | **AI summary** | `meeting_summary:read:admin` |
 
-> **Tip:** For full access add all scopes. For a read-only agent, add only the `:read:admin` variants.
-
-### Activate the app
-
-Click **Activate your app** in the Marketplace — the app must be active for tokens to be issued.
+For a read-only agent, add only the `:read:` / `:read:admin` variants. Click **Activate your app** — tokens are not issued until the app is active.
 
 ---
 
-## Step 2 — Configure Credentials
+## Authentication
 
-Three ways to provide credentials (checked in this order):
+Credentials are resolved in this order: CLI flags → environment → `zoom login` config.
 
-### Option A — Environment variables (recommended for agents)
+### Environment variables (recommended for agents)
 
 ```bash
 export ZOOM_ACCOUNT_ID="your-account-id"
@@ -67,44 +101,70 @@ export ZOOM_CLIENT_ID="your-client-id"
 export ZOOM_CLIENT_SECRET="your-client-secret"
 ```
 
-### Option B — Interactive login (recommended for local CLI use)
+A committed [`.env.example`](.env.example) lists the names. Copy it to `.env` locally — **never commit real values**.
+
+### Interactive login (local CLI)
 
 ```bash
-zoom login
+zoom login    # writes ~/.zoom-agent-cli/config.json (mode 0600)
+zoom logout   # deletes that file
 ```
 
-Stores credentials in `~/.zoom-agent-cli/config.json` (mode `0600`).
-
-### Option C — Per-command flags
+### Per-command flags
 
 ```bash
-zoom meetings list \
-  --account-id "..." \
-  --client-id "..." \
-  --client-secret "..."
+zoom meetings list --account-id "..." --client-id "..." --client-secret "..."
 ```
+
+If credentials are missing, the CLI exits `1` and prints how to set them.
 
 ---
 
-## Step 3 — Verify
+## Quickstart
 
 ```bash
 zoom status
+zoom meetings list --user-id me --type upcoming --pretty
 ```
 
-```
-Credentials found:
-  Account ID: 12345678...
-  Client ID:  abcdefgh...
-  Client Secret: ****
+### Recordings and transcripts
 
-Testing API connection...
-Connected as: Jane Doe (jane@example.com)
+Zoom has **no** `GET /meetings/{id}/recordings/transcript` endpoint. This CLI lists recording files, finds `file_type=TRANSCRIPT` (or `recording_type=audio_transcript`), and downloads that VTT with `download_access_token`. Meeting UUIDs that start with `/` or contain `//` are double-encoded automatically.
+
+```bash
+# Find recent recordings that have a transcript
+zoom recordings recent --days 14 --pretty
+
+# Or search by topic
+zoom recordings search standup --days 90 --pretty
+
+# Pull WEBVTT + plain text for a meeting ID or UUID
+zoom recordings transcript <meetingId> --pretty
 ```
+
+A successful pull looks like:
+
+```json
+{
+  "meetingId": "12345678901",
+  "transcript": "WEBVTT\n\n1\n00:00:00.000 --> 00:00:02.000\nHello\n",
+  "text": "Hello"
+}
+```
+
+If the meeting has no cloud transcript file, you get `{ "transcript": null, "message": "No transcript file found for this recording." }`.
+
+**Live verification** (needs a real S2S app; not run in CI):
+
+1. `zoom status` — connection succeeds.
+2. `zoom recordings recent --days 14 --pretty` — at least one item with `"has_transcript": true`.
+3. `zoom recordings transcript <id>` — `transcript` starts with `WEBVTT`.
+
+Unit tests mock the Zoom API and the VTT download (`npm test`).
 
 ---
 
-## CLI Usage
+## CLI
 
 ```
 zoom [options] [command]
@@ -134,13 +194,7 @@ Commands:
   groups                  User groups (7 commands)
 ```
 
-### Examples
-
 ```bash
-# List upcoming meetings
-zoom meetings list --type upcoming --pretty
-
-# Create a scheduled meeting
 zoom meetings create \
   --topic "Sprint Review" \
   --type 2 \
@@ -148,49 +202,26 @@ zoom meetings create \
   --start-time "2026-03-15T14:00:00Z" \
   --timezone "America/New_York"
 
-# Get recording files with download URLs
-zoom recordings get <meeting-id>
-
-# Get AI Companion meeting summary
+zoom recordings get <meeting-id> --include-fields download_access_token
 zoom meetings summary <meeting-uuid>
-
-# Find recent recorded meetings (has_transcript flag)
-zoom recordings recent --days 14 --pretty
-
-# Search recording topics
-zoom recordings search Matchr --days 90 --pretty
-
-# Get transcript for a recorded meeting (VTT + plain text)
-zoom recordings transcript <meeting-id>
-
-# Get past meeting participants with join/leave times
 zoom past-meetings participants <meeting-uuid>
-
-# Send a chat message to a channel
-zoom chat send-message \
-  --to-channel <channel-id> \
-  --message "Deployment complete ✓"
-
-# Pull admin operation logs
-zoom reports operation-logs --from 2026-03-01 --to 2026-03-13
-
-# Filter output to specific fields
+zoom chat send-message --to-channel <channel-id> --message "Deployment complete"
+zoom reports daily --year 2026 --month 3
 zoom users list --fields id,email,first_name,last_name --pretty
 ```
 
 ---
 
-## MCP Server (for AI Agents)
-
-Every CLI command is also available as an MCP tool. Start the server:
+## MCP server
 
 ```bash
 zoom mcp
+# or: npx zoom-agent-cli mcp
 ```
 
-### Claude Code / Claude Desktop config
+### Claude Code / Claude Desktop
 
-Add to `~/.claude.json` (or your MCP config file):
+`~/.claude.json` (or your MCP config). Prefer env vars over checking secrets into git.
 
 ```json
 {
@@ -208,61 +239,36 @@ Add to `~/.claude.json` (or your MCP config file):
 }
 ```
 
-If installed globally:
+If installed globally, `"command": "zoom"` and `"args": ["mcp"]`.
 
-```json
-{
-  "mcpServers": {
-    "zoom": {
-      "command": "zoom",
-      "args": ["mcp"],
-      "env": {
-        "ZOOM_ACCOUNT_ID": "your-account-id",
-        "ZOOM_CLIENT_ID": "your-client-id",
-        "ZOOM_CLIENT_SECRET": "your-client-secret"
-      }
-    }
-  }
-}
+### Grok
+
+```toml
+[mcp_servers.zoom]
+command = "zoom"
+args = ["mcp"]
+enabled = true
 ```
 
-### MCP tools exposed
+### Tools
 
-All 59 tools follow the naming convention `{group}_{subcommand}`:
+All **61** tools are `{group}_{subcommand}`. Transcript:
 
 | Tool | Description |
 |------|-------------|
+| `recordings_transcript` | Download the meeting VTT from recording files |
+| `recordings_recent` | Last N days of recordings with `has_transcript` |
+| `recordings_search` | Search recording topics, then pull VTT by id |
+| `recordings_get` | Recording files and download URLs |
 | `meetings_list` | List meetings for a user |
-| `meetings_get` | Get meeting details |
-| `meetings_create` | Create a meeting |
-| `meetings_update` | Update a meeting |
-| `meetings_delete` | Delete a meeting |
-| `meetings_end` | End a live meeting |
-| `meetings_summary` | Get AI Companion meeting summary |
-| `recordings_list` | List cloud recordings |
-| `recordings_get` | Get recording files and download URLs |
-| `recordings_transcript` | Get meeting transcript (VTT from recording files) |
-| `recordings_settings` | Get recording sharing settings |
-| `users_list` | List all account users |
-| `users_get` | Get user details |
-| `past_meetings_get` | Get past meeting instance details |
-| `past_meetings_participants` | Get participant list with join/leave times |
-| `webinars_list` | List webinars |
-| `webinars_get` | Get webinar details |
-| `reports_daily` | Daily usage report |
-| `reports_meeting_participants` | Participant report for a meeting |
-| `reports_operation_logs` | Admin operation audit log |
-| `dashboard_meetings` | Live/past meetings with quality metrics |
-| `dashboard_quality` | Overall quality scores |
-| `chat_list_channels` | List chat channels |
-| `chat_send_message` | Send a message to channel or contact |
-| `chat_list_messages` | List chat message history |
-| `groups_list` | List all groups |
-| … | *(59 total — run `zoom mcp` to see all)* |
+| `meetings_get` | Meeting details |
+| `meetings_summary` | AI Companion summary |
+
+Run `zoom mcp` (with credentials) to register the full set.
 
 ---
 
-## Command Reference
+## Command reference
 
 ### meetings
 
@@ -284,13 +290,13 @@ All 59 tools follow the naming convention `{group}_{subcommand}`:
 |---------|-------------|
 | `zoom recordings list [options]` | List cloud recordings (`--from`, `--to`) |
 | `zoom recordings get <meetingId>` | Get recording files and download URLs |
-| `zoom recordings transcript <meetingId>` | Get meeting transcript (VTT file from recording files) |
+| `zoom recordings transcript <meetingId>` | Download VTT from the `TRANSCRIPT` recording file |
+| `zoom recordings recent [options]` | Last N days with `has_transcript` (default 14) |
+| `zoom recordings search <keyword>` | Search topics (default 90 days) |
 | `zoom recordings settings <meetingId>` | Get recording settings |
 | `zoom recordings delete <meetingId>` | Move recordings to trash |
 | `zoom recordings delete-file <meetingId> <recordingId>` | Delete a specific file |
 | `zoom recordings recover <meetingId>` | Recover from trash |
-
-Zoom has no standalone transcript API. `recordings transcript` calls `GET /meetings/{meetingId}/recordings?include_fields=download_access_token`, finds the `TRANSCRIPT` / `audio_transcript` file, and downloads that VTT via `download_url`.
 
 ### users
 
@@ -317,10 +323,10 @@ Zoom has no standalone transcript API. `recordings transcript` calls `GET /meeti
 | `zoom webinars list [options]` | List webinars |
 | `zoom webinars get <id>` | Get webinar details |
 | `zoom webinars create [options]` | Create a webinar |
-| `zoom webinars update <id> [options]` | Update a webinar |
+| `zoom webinars update <id>` | Update a webinar |
 | `zoom webinars delete <id>` | Delete a webinar |
 | `zoom webinars list-registrants <id>` | List registrants |
-| `zoom webinars add-registrant <id>` | Add a registrant |
+| `zoom webinars add-registrant <id>` | Add registrant |
 | `zoom webinars list-panelists <id>` | List panelists |
 | `zoom webinars add-panelists <id>` | Add panelists |
 | `zoom webinars list-polls <id>` | List polls |
@@ -374,19 +380,12 @@ Zoom has no standalone transcript API. `recordings transcript` calls `GET /meeti
 
 ## Output
 
-All commands output JSON to stdout, errors to stderr.
+JSON on stdout, errors on stderr.
 
 ```bash
-# Compact JSON (default — pipe-friendly)
 zoom meetings list
-
-# Indented JSON (human-readable)
 zoom meetings list --pretty
-
-# Select specific fields
 zoom users list --fields id,email,first_name --pretty
-
-# Suppress output (exit code only — for scripts)
 zoom meetings delete 12345 --quiet
 echo $?   # 0 = success, 1 = error
 ```
@@ -395,20 +394,39 @@ echo $?   # 0 = success, 1 = error
 
 ## Architecture
 
-Each command is defined once as a `CommandDefinition` object — the same definition powers both the CLI (Commander.js) and MCP tool registration. Adding a new command means creating one file; both interfaces pick it up automatically.
+Each command is one `CommandDefinition` — CLI (Commander.js) and MCP share it. Add `src/commands/{group}/{subcommand}.ts` and register it in `src/commands/index.ts`.
 
 ```
 src/
 ├── core/
-│   ├── client.ts    # S2S OAuth with automatic token refresh
-│   ├── handler.ts   # executeCommand() — routes fields to path/query/body
-│   └── auth.ts      # flag > env > config resolution
+│   ├── client.ts    # S2S OAuth, token refresh, retries
+│   ├── handler.ts   # executeCommand() — path/query/body + UUID encoding
+│   └── auth.ts      # flag > env > config
 ├── commands/        # One file per command
 └── mcp/server.ts    # Registers all CommandDefinitions as MCP tools
 ```
 
 ---
 
+## Contributing
+
+1. Fork or clone this repo. Node 18+ required.
+2. `npm install && npm run typecheck && npm test && npm run build`
+3. Follow the `CommandDefinition` pattern. Prefer a custom handler only when the Zoom request is non-standard (the transcript command is the main example).
+4. Do not add live Zoom credentials to tests or CI. Mock `ZoomClient` and `fetch`.
+5. Open a PR against `main`. CI must stay green.
+
+---
+
+## Security
+
+- **Never commit** `ZOOM_ACCOUNT_ID`, `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, `.env`, or `~/.zoom-agent-cli/config.json`.
+- Server-to-Server OAuth is account-wide. Treat those three values like production secrets.
+- `recordings get --include-fields download_access_token` and VTT download URLs are short-lived credentials — do not paste them into tickets or logs.
+- Report vulnerabilities privately to the maintainer via GitHub security advisories on [bcharleson/zoom-agent-cli](https://github.com/bcharleson/zoom-agent-cli).
+
+---
+
 ## License
 
-MIT — [github.com/bcharleson/zoom-agent-cli](https://github.com/bcharleson/zoom-agent-cli)
+MIT — see [LICENSE](LICENSE).

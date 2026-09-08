@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { allCommands } from '../commands/index.js';
 import { resolveCredentials } from '../core/auth.js';
 import { ZoomClient } from '../core/client.js';
+import { VERSION } from '../version.js';
 
 export async function startMcpServer(): Promise<void> {
   const credentials = await resolveCredentials();
@@ -10,7 +11,7 @@ export async function startMcpServer(): Promise<void> {
 
   const server = new McpServer({
     name: 'zoom',
-    version: '0.1.0',
+    version: VERSION,
   });
 
   // Register every CommandDefinition as an MCP tool

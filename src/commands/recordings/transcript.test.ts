@@ -129,6 +129,25 @@ describe('fetchRecordingTranscript', () => {
     );
   });
 
+  it('returns a timeout message when the VTT download is aborted', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(Object.assign(new Error('The operation was aborted'), { name: 'AbortError' })),
+    );
+
+    const result = await fetchRecordingTranscript(
+      '123',
+      mockClient(vi.fn().mockResolvedValue({
+        recording_files: [{ file_type: 'TRANSCRIPT', download_url: 'https://zoom.example/slow.vtt' }],
+      })),
+    );
+
+    expect(result).toEqual({
+      transcript: null,
+      message: 'Transcript download timed out after 30s.',
+    });
+  });
+
   it('preserves existing query params on download_url when adding the token', async () => {
     const get = vi.fn().mockResolvedValue({
       download_access_token: 'tok-xyz',

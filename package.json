@@ -1,17 +1,23 @@
 {
   "name": "zoom-agent-cli",
-  "version": "0.1.4",
-  "description": "CLI and MCP server for the Zoom API — built for humans and AI agents",
+  "version": "0.2.0",
+  "description": "CLI and MCP server for the Zoom API — meetings, cloud recordings (including VTT transcripts), webinars, and more. Built for humans and AI agents.",
   "type": "module",
   "bin": {
     "zoom": "dist/index.js",
     "zoom-agent-cli": "dist/index.js"
   },
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./mcp": "./dist/mcp.js"
+  },
   "files": [
     "dist",
     "README.md",
-    "AGENTS.md",
-    "CLAUDE.md"
+    "LICENSE",
+    "CHANGELOG.md",
+    "AGENTS.md"
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
@@ -19,18 +25,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "zoom",
-    "video-conferencing",
-    "meetings",
-    "recordings",
-    "webinars",
+    "zoom-api",
     "cli",
     "mcp",
-    "ai-agent",
-    "openclaw"
+    "mcp-server",
+    "transcript",
+    "vtt",
+    "recordings",
+    "meetings",
+    "webinars",
+    "server-to-server-oauth",
+    "ai-agent"
   ],
   "author": "bcharleson",
   "license": "MIT",
@@ -38,9 +47,15 @@
     "type": "git",
     "url": "git+https://github.com/bcharleson/zoom-agent-cli.git"
   },
+  "bugs": {
+    "url": "https://github.com/bcharleson/zoom-agent-cli/issues"
+  },
   "homepage": "https://github.com/bcharleson/zoom-agent-cli#readme",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.3.0",

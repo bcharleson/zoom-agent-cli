@@ -12,7 +12,7 @@ export const recordingsGetCommand: CommandDefinition = {
   ],
 
   inputSchema: z.object({
-    meetingId: z.string().describe('Meeting ID or UUID'),
+    meetingId: z.string().describe('Meeting ID or UUID. UUIDs that start with / or contain // are double-encoded automatically.'),
     include_fields: z.string().optional()
       .describe('Additional fields to include (e.g., "download_access_token")'),
     ttl: z.coerce.number().optional()
