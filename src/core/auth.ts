@@ -7,14 +7,8 @@ export interface ZoomCredentials {
   clientSecret: string;
 }
 
-export const MISSING_CREDENTIALS_MESSAGE = [
-  'No Zoom credentials found.',
-  'Provide Server-to-Server OAuth credentials in one of these ways:',
-  '  1. Environment: ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET',
-  '  2. Interactive login: zoom login',
-  '  3. Flags: --account-id --client-id --client-secret',
-  'Docs: https://github.com/bcharleson/zoom-agent-cli#authentication',
-].join(' ');
+export const MISSING_CREDENTIALS_MESSAGE =
+  'No Zoom credentials found. Set ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, and ZOOM_CLIENT_SECRET; or run zoom login; or pass --account-id --client-id --client-secret. Docs: https://github.com/bcharleson/zoom-agent-cli#authentication';
 
 export async function resolveCredentials(flags?: {
   accountId?: string;
